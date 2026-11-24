@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Memory Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Caveat:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday, for teens closing the school year: warm, playful, not childish
+   IDEA a black-and-white printed memory book (her Canva version) turned into a notebook you fill on screen
+   PICTURE the open sheet itself: lined paper, photo slots, sketch pads, stars, an envelope that seals
+   COLOUR paper white, ink black, one highlighter yellow for what is active or done
+   TYPE Fredoka caps in black blocks + Caveat script, Nunito for text (echoes the printable)
+   LAYOUT top: title + progress; tab strip of 10 pages; one sheet at a time; pager at the bottom. Phone: same order, fields stack */
+:root{color-scheme:light dark;--bg:light-dark(#f4f2ec,#121212);--paper:light-dark(#ffffff,#1c1c1c);--ink:light-dark(#141414,#f2efe6);--mute:light-dark(#585858,#b9b5aa);--line:light-dark(#cfcbc0,#3d3d3d);--soft:light-dark(#f7f5ef,#242424);--hi:#ffe14d;--hink:#141414}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 Nunito,system-ui,sans-serif;overflow-x:clip}
+button,input,textarea{font:inherit;color:inherit}
+img{max-width:100%}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+.top{padding:22px 0 12px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+.brand,.ttl{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px}
+.blk{font-family:Fredoka,Nunito,sans-serif;font-weight:700;text-transform:uppercase;background:var(--ink);color:var(--paper);padding:2px 14px 0;border-radius:8px;line-height:1.15;letter-spacing:-.01em}
+.scr{font-family:Caveat,cursive;font-weight:700;line-height:1}
+.brand .blk{font-size:clamp(22px,4vw,30px)}.brand .scr{font-size:clamp(30px,5vw,40px)}
+.prog{display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;white-space:nowrap}
+.bar{width:140px;height:12px;border:2px solid var(--ink);border-radius:99px;overflow:hidden;background:var(--paper)}
+.bar i{display:block;height:100%;width:0;background:var(--hi);transition:width .4s}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:thin}
+.tab{flex:none;min-height:44px;padding:0 14px;border:2px solid var(--ink);border-radius:99px;background:var(--paper);font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.tab[aria-current=true]{background:var(--ink);color:var(--paper)}
+.tab .ok{width:10px;height:10px;border-radius:50%;border:2px solid currentColor}
+.tab.done .ok{background:var(--hi);border-color:var(--hink)}
+.sheet{display:none;background:var(--paper);border:2px solid var(--ink);border-radius:18px;padding:clamp(18px,3.5vw,36px);margin-bottom:16px}
+.sheet.on{display:block}
+.ttl .blk{font-size:clamp(28px,6vw,46px)}.ttl .scr{font-size:clamp(34px,7vw,54px)}
+.hint{color:var(--mute);margin:10px 0 22px;max-width:62ch}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.f{display:flex;flex-direction:column;gap:4px;font-weight:800;font-size:15px}
+.f input,.f textarea,.inp{width:100%;min-height:44px;font-size:16px;font-weight:600;padding:8px 12px;border:2px solid var(--ink);border-radius:12px;background:var(--paper)}
+.row{display:grid;grid-template-columns:minmax(9em,auto) minmax(0,1fr);gap:10px;align-items:center;margin-bottom:8px;font-weight:800;font-size:15px}
+.row input{min-height:42px;font-size:16px;font-weight:600;border:0;border-bottom:2px solid var(--ink);background:transparent;padding:6px 4px;width:100%}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+textarea{resize:vertical}
+.lined{width:100%;border:0;background:transparent;font-size:16px;font-weight:600;line-height:34px;padding:0 4px;background-image:linear-gradient(transparent 33px,var(--line) 33px,var(--line) 35px);background-size:100% 35px;min-height:140px}
+.box{border:2px solid var(--ink);border-radius:16px;padding:14px 16px;background:var(--paper)}
+.box h3{margin:0 0 6px;font:600 20px/1.2 Fredoka,Nunito,sans-serif;display:flex;align-items:center;gap:8px}
+.dash{border-style:dashed}
+.btn{min-height:44px;padding:0 18px;border:2px solid var(--ink);border-radius:99px;background:var(--paper);font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.pri{background:var(--ink);color:var(--paper)}
+.btn.hi{background:var(--hi);color:var(--hink);border-color:var(--hink)}
+.btn:active{transform:translateY(1px)}
+.photo{position:relative;aspect-ratio:1;border:2.5px dashed var(--ink);border-radius:18px;display:grid;place-items:center;overflow:hidden;background:var(--soft)}
+.photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.photo .pick{position:relative;z-index:1}
+.photo.has .pick{position:absolute;bottom:10px;right:10px;min-height:40px;font-size:14px}
+.pad{border:2px solid var(--ink);border-radius:16px;overflow:hidden;background:#fff}
+.pad canvas{display:block;width:100%;touch-action:none;cursor:crosshair}
+.padbar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 8px;border-top:2px solid var(--ink);background:var(--paper);font-size:13px;color:var(--mute);font-weight:700}
+.padbar .btn{min-height:36px;font-size:13px;padding:0 12px}
+.chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.chips input{text-align:center;border-radius:99px;font-family:Caveat,cursive;font-size:24px;font-weight:700;min-height:52px;padding:4px 10px}
+.stars{display:flex;gap:6px;flex-wrap:wrap}
+.star{width:52px;height:52px;border:0;background:none;padding:0;cursor:pointer}
+.star svg{width:100%;height:100%}
+.star path{fill:var(--paper);stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round;transition:fill .15s}
+.star.on path{fill:var(--hi);stroke:var(--hink)}
+.fav{position:relative}
+.crown{position:absolute;top:8px;right:8px;width:40px;height:40px;border:2px solid var(--ink);border-radius:50%;background:var(--paper);cursor:pointer;display:grid;place-items:center}
+.crown svg{width:20px;height:20px}
+.fav.top{background:var(--hi);color:var(--hink);border-color:var(--hink)}
+.fav.top input{color:var(--hink);border-color:var(--hink)}
+.fav.top .crown{background:var(--hink);color:var(--hi)}
+.fav h3{font-size:17px;padding-right:44px}
+.notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.note{border:2px solid var(--ink);border-radius:20px 20px 20px 6px;padding:12px 14px;position:relative;background:var(--paper)}
+.note:nth-child(even){border-radius:20px 20px 6px 20px;border-style:dashed}
+.note b{display:block;font:600 18px Fredoka,sans-serif;padding-right:40px}
+.note p{margin:4px 0 6px;white-space:pre-wrap;overflow-wrap:anywhere}
+.note img{display:block;height:56px;background:#fff;border-radius:6px}
+.note .x{position:absolute;top:6px;right:6px;width:36px;height:36px;border:0;border-radius:50%;background:var(--soft);cursor:pointer;font-weight:800}
+.nums{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.num{display:flex;align-items:center;gap:12px;border:2px solid var(--ink);border-radius:16px;padding:10px 12px}
+.ctr{display:flex;align-items:center;flex:none}
+.ctr button{width:36px;height:44px;border:2px solid var(--ink);background:var(--paper);font-weight:800;font-size:20px;cursor:pointer}
+.ctr button:first-child{border-radius:99px 0 0 99px}.ctr button:last-child{border-radius:0 99px 99px 0}
+.ctr input{width:64px;height:44px;text-align:center;border:2px solid var(--ink);border-left:0;border-right:0;font:700 22px Fredoka,sans-serif;background:var(--paper);-moz-appearance:textfield}
+.ctr input::-webkit-inner-spin-button{-webkit-appearance:none}
+.num span{font-weight:800;font-size:15px;line-height:1.3}
+.pill{display:inline-block;font:600 15px Fredoka,sans-serif;border:2px solid var(--ink);border-radius:99px;padding:2px 14px;margin-bottom:10px}
+.goal{display:grid;gap:8px;margin-bottom:14px}
+.goal header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+.chk{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;cursor:pointer;min-height:44px}
+.chk input{width:24px;height:24px;accent-color:#141414}
+.word{font-family:Caveat,cursive;font-size:34px!important;text-align:center;border-radius:99px!important}
+.letter{border:2px solid var(--ink);border-radius:22px;padding:18px 20px}
+.lethead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center;margin-bottom:6px}
+.lethead .scr{font-size:32px}
+.date{display:flex;align-items:center;gap:8px;border:2px dashed var(--ink);border-radius:12px;padding:4px 10px;font-weight:800;font-size:14px}
+.date input{border:0;background:transparent;min-height:40px;font-weight:700}
+.envelope{display:none;text-align:center;padding:10px 0 4px}
+.sealed .letter{display:none}.sealed .envelope{display:block}
+.envelope svg{width:min(360px,90%);height:auto}
+.env-flap{transform-origin:50% 0;animation:flap .7s ease-out both}
+@keyframes flap{from{transform:scaleY(-1)}to{transform:scaleY(1)}}
+.envelope p{font:700 30px Caveat,cursive;margin:6px 0 14px}
+.pager{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:4px 0 28px}
+.pager span{font-weight:800;font-size:14px;color:var(--mute)}
+.sum{display:grid;gap:8px;margin:6px 0 20px}
+.sum div{display:grid;grid-template-columns:minmax(0,1fr) 120px 44px;gap:10px;align-items:center;font-weight:700}
+.sum .m{height:12px;border:2px solid var(--ink);border-radius:99px;overflow:hidden}
+.sum .m i{display:block;height:100%;background:var(--hi)}
+.sum em{font-style:normal;text-align:right;font-variant-numeric:tabular-nums;font-size:14px}
+.acts{display:flex;flex-wrap:wrap;gap:10px}
+.msg{min-height:24px;font-weight:700;margin-top:10px}
+details{margin-top:24px;border-top:2px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-weight:800;min-height:44px;display:flex;align-items:center}
+details li{margin-bottom:6px}
+.dlg{position:fixed;inset:0;background:rgb(0 0 0/.45);display:none;place-items:center;padding:16px;z-index:9}
+.dlg.on{display:grid}
+.dlg>div{background:var(--paper);border:2px solid var(--ink);border-radius:18px;padding:22px;max-width:380px}
+.dlg h3{margin:0 0 8px;font:600 22px Fredoka,sans-serif}
+.ico{display:block;height:auto;pointer-events:none;user-select:none}
+.pk{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;padding-left:0;overflow:hidden}
+.pk>.ico{align-self:end;height:150px;width:auto;margin-bottom:-14px}
+.pk>div{padding-top:2px}
+.favi{position:absolute;left:0;bottom:0;height:86px;width:auto}
+.fav{padding-left:72px;overflow:hidden;min-height:118px}
+.deco{position:absolute;width:auto;pointer-events:none}
+.tape{position:absolute;top:-22px;height:40px;width:auto}
+.pill-ico{display:flex;align-items:center;gap:8px}
+.pill-ico .ico{height:44px;width:auto}
+:root[data-theme=dark] .ico{filter:invert(1) hue-rotate(180deg)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .ico{filter:invert(1) hue-rotate(180deg)}}
+@media(max-width:640px){.pk>.ico{height:110px}.deco{display:none}}
+.foot{text-align:center;font-size:13px;color:var(--mute);padding-bottom:24px}
+@media(max-width:640px){.grid2,.nums,.notes{grid-template-columns:minmax(0,1fr)}.grid3,.chips{grid-template-columns:repeat(2,minmax(0,1fr))}.row{grid-template-columns:minmax(0,1fr);gap:0}.sum div{grid-template-columns:minmax(0,1fr) 80px 40px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+<div class="brand"><span class="blk">My Memory</span><span class="scr">book 2026</span></div>
+<div class="prog"><div class="bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="9" id="pb"><i id="pbar"></i></div><span id="ptxt">0 of 9 pages</span></div>
+</header>
+<nav class="tabs" id="tabs" aria-label="Pages"></nav>
+
+<main id="book">
+<section class="sheet" data-i="0" aria-label="Cover" style="position:relative">
+<img class="ico deco" src="icons/cover-sparkle.png" alt="" style="top:18px;right:24px;height:64px"><img class="ico deco" src="icons/cover-star.png" alt="" style="top:82px;right:96px;height:34px"><img class="ico deco" src="icons/cover-hand.png" alt="" style="bottom:24px;right:30px;height:44px">
+<div class="ttl"><span class="blk">My school</span><span class="scr">year</span></div>
+<p class="hint">Memories, laughs &amp; goals from 2026. Upload a photo of yourself (or one that represents you) and fill in your details.</p>
+<div class="grid2">
+<div class="photo" data-photo="foto"><img alt="My photo" hidden><button type="button" class="btn pick">Upload my photo</button><input type="file" accept="image/*" hidden></div>
+<div style="display:grid;gap:14px;align-content:start">
+<label class="f">Name<input id="nombre" data-k="nombre" autocomplete="off" placeholder="e.g. Emma Johnson"></label>
+<label class="f">Class<input id="curso" data-k="curso" autocomplete="off" placeholder="e.g. 8th grade B"></label>
+<label class="f">School<input id="colegio" data-k="colegio" autocomplete="off" placeholder="Your school’s name"></label>
+</div>
+</div>
+</section>
+
+<section class="sheet" data-i="1" aria-label="All About Me">
+<div class="ttl"><span class="blk">All</span><span class="scr">about me</span></div>
+<p class="hint">Fill in your details and draw a self-portrait with your finger or mouse. Show off your style!</p>
+<div class="grid2">
+<div style="position:relative"><img class="ico deco" src="icons/hearts.png" alt="" style="top:-30px;left:-8px;height:40px"><div class="pad" data-sketch="retrato" data-w="600" data-h="600"><canvas aria-label="Drawing area for your self-portrait"></canvas><div class="padbar"><span>My self-portrait</span><button type="button" class="btn" data-clear>Clear</button></div></div></div>
+<div>
+<label class="row">Nickname<input id="apodo" data-k="apodo" placeholder="what people call you"></label>
+<label class="row">Age<input id="edad" data-k="edad" placeholder="__ years old"></label>
+<label class="row">My favorite food<input id="comida" data-k="comida"></label>
+<label class="row">My song of the year<input id="cancion" data-k="cancion"></label>
+<label class="row">Makes me laugh<input id="risa" data-k="risa"></label>
+<label class="row">If I were an animal, I’d be<input id="animal" data-k="animal"></label>
+<label class="row">My superpower<input id="poder" data-k="poder"></label>
+</div>
+</div>
+<h3 style="font:600 22px Fredoka,sans-serif;margin:24px 0 10px">Three words that describe me</h3>
+<div class="chips"><input id="pal1" data-k="pal1" class="inp" aria-label="Word 1" placeholder="word 1"><input id="pal2" data-k="pal2" class="inp" aria-label="Word 2" placeholder="word 2"><input id="pal3" data-k="pal3" class="inp" aria-label="Word 3" placeholder="word 3"></div>
+<div class="box" style="margin-top:40px;position:relative"><img class="ico tape" src="icons/tape.png" alt="" style="left:6%"><img class="ico tape" src="icons/tape.png" alt="" style="right:6%"><h3 style="margin-top:14px">A fun fact most people don’t know about me</h3><textarea class="lined" id="dato" data-k="dato" aria-label="Fun fact"></textarea></div>
+</section>
+
+<section class="sheet" data-i="2" aria-label="My Year in Review">
+<div class="ttl"><span class="blk">My year</span><span class="scr">in review</span></div>
+<p class="hint">Think back on everything you experienced this year and write about what mattered most.</p>
+<div class="grid2">
+<div class="box pk"><img class="ico" src="icons/trophy-peek.png" alt=""><div><h3>The best moment</h3><textarea class="lined" id="mejor" data-k="mejor" aria-label="The best moment"></textarea></div></div>
+<div class="box pk"><img class="ico" src="icons/hard.png" alt=""><div><h3>The hardest part</h3><textarea class="lined" id="dificil" data-k="dificil" aria-label="The hardest part"></textarea></div></div>
+<div class="box pk"><img class="ico" src="icons/laugh.png" alt=""><div><h3>The funniest thing</h3><textarea class="lined" id="gracioso" data-k="gracioso" aria-label="The funniest thing"></textarea></div></div>
+<div class="box pk"><img class="ico" src="icons/bulb.png" alt=""><div><h3>Something I learned</h3><textarea class="lined" id="aprendi" data-k="aprendi" aria-label="Something I learned"></textarea></div></div>
+</div>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:end;margin-top:20px"><img class="ico" src="icons/clapper.png" alt="" style="height:96px;width:auto"><label class="f">If my year were a movie, it would be called…<input id="pelicula" data-k="pelicula" placeholder="e.g. Fast &amp; Homework-Free"></label></div>
+<div class="box dash" style="margin-top:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between"><h3 style="margin:0">How would I rate my year?</h3><div class="stars" id="stars" data-k="nota"></div></div>
+</section>
+
+<section class="sheet" data-i="3" aria-label="My Favorites of the Year">
+<div class="ttl"><span class="blk">My favorites</span><span class="scr">of the year</span></div>
+<p class="hint">Write down your favorite things from this school year. Then tap the crown on your all-time favorite.</p>
+<div class="grid2" id="favs"></div>
+<div class="box pk" style="margin-top:20px;padding-left:10px"><img class="ico" src="icons/trophy.png" alt="" style="height:120px;margin-bottom:4px"><div><h3>My all-time favorite is… <span id="favname" style="font-family:Caveat,cursive;font-size:28px"></span></h3><textarea class="lined" id="favpq" data-k="favpq" aria-label="Why it’s your favorite" placeholder="because…" style="min-height:104px"></textarea></div></div>
+</section>
+
+<section class="sheet" data-i="4" aria-label="Signatures and Messages">
+<div class="ttl"><span class="blk">Signatures</span><span class="scr">&amp; messages</span></div>
+<p class="hint">Pass your screen to your classmates and teachers so they can write you a message and sign your page.</p>
+<div class="box">
+<div class="grid2">
+<div style="display:grid;gap:12px;align-content:start">
+<label class="f">Name<input id="fnom" class="inp" autocomplete="off" placeholder="Who’s writing?"></label>
+<label class="f">Message<textarea id="fmsg" rows="4" placeholder="Write something nice…"></textarea></label>
+</div>
+<div><span style="font-weight:800;font-size:15px">Signature</span><div class="pad" data-sketch="_firma" data-w="600" data-h="220" data-temp><canvas aria-label="Signature area"></canvas><div class="padbar"><span>Sign here</span><button type="button" class="btn" data-clear>Clear</button></div></div></div>
+</div>
+<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center"><button type="button" class="btn pri" id="addnote">Add to my book</button><span id="notemsg" style="font-weight:700"></span></div>
+</div>
+<div class="notes" id="notes"></div>
+</section>
+
+<section class="sheet" data-i="5" aria-label="My Year in Numbers">
+<div class="ttl"><span class="blk">My year</span><span class="scr">in numbers</span></div>
+<p class="hint">Use the buttons or type a number. Not sure? Make up a believable one!</p>
+<div class="nums" id="nums"></div>
+<div class="box pk" style="margin-top:20px;padding-left:12px"><img class="ico" src="icons/pencil.png" alt="" style="height:170px;margin-bottom:4px"><div>
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px"><h3 style="margin:0">The number that best sums up my year is</h3><input id="nres" data-k="nres" class="inp" inputmode="numeric" aria-label="Number that sums up your year" style="width:110px;text-align:center;font:700 24px Fredoka,sans-serif;border-radius:50%;height:80px"></div>
+<textarea class="lined" id="npq" data-k="npq" aria-label="Why that number" placeholder="because…" style="min-height:104px;margin-top:8px"></textarea>
+</div></div>
+</section>
+
+<section class="sheet" data-i="6" aria-label="Then and Now">
+<div class="ttl"><span class="blk">Then</span><span class="scr">and now</span></div>
+<p class="hint">Compare who you were at the start of the year with who you are now. Upload photos, then write.</p>
+<div class="grid2">
+<div><span class="pill">THEN</span>
+<div class="photo" data-photo="fantes" style="aspect-ratio:4/3"><img alt="How I looked back then" hidden><button type="button" class="btn pick">Back then</button><input type="file" accept="image/*" hidden></div>
+<label class="f" style="margin-top:12px">I used to be…<input id="era" data-k="era"></label>
+<label class="f" style="margin-top:10px">I used to worry about…<input id="preoc1" data-k="preoc1"></label>
+<label class="f" style="margin-top:10px">I used to like…<input id="gust1" data-k="gust1"></label>
+</div>
+<div><span class="pill">NOW</span>
+<div class="photo" data-photo="fahora" style="aspect-ratio:4/3"><img alt="How I look now" hidden><button type="button" class="btn pick">Me now</button><input type="file" accept="image/*" hidden></div>
+<label class="f" style="margin-top:12px">I am…<input id="soy" data-k="soy"></label>
+<label class="f" style="margin-top:10px">I worry about…<input id="preoc2" data-k="preoc2"></label>
+<label class="f" style="margin-top:10px">I like…<input id="gust2" data-k="gust2"></label>
+</div>
+</div>
+<div class="box pk" style="margin-top:20px;padding-left:10px"><img class="ico" src="icons/change.png" alt="" style="height:120px;margin-bottom:4px"><div><h3>What changed most about me this year was…</h3><textarea class="lined" id="cambio" data-k="cambio" aria-label="What changed most about me" style="min-height:104px"></textarea></div></div>
+</section>
+
+<section class="sheet" data-i="7" aria-label="Goals for Next Year">
+<div class="ttl"><span class="blk">Goals</span><span class="scr">for next year</span></div>
+<p class="hint">Write three goals: one personal, one for school, and one just for fun.</p>
+<div id="goals"></div>
+<label class="f" style="margin-top:6px;text-align:center">My word for next year:<input id="palabra" data-k="palabra" class="word"></label>
+</section>
+
+<section class="sheet" data-i="8" aria-label="Letter to My Future Self">
+<div class="ttl"><span class="blk">Letter to</span><span class="scr">my future self</span></div>
+<p class="hint">Write a letter to your future self. Share who you are today, what you dream about, and the advice you’d give yourself. When you’re done, seal it.</p>
+<div id="lwrap">
+<div class="letter">
+<div class="lethead"><span class="scr">Dear Future Me,</span><label class="date"><img class="ico" src="icons/envelope.png" alt="" style="height:30px;width:auto">Open it on<input type="date" id="fecha" data-k="fecha"></label></div>
+<textarea class="lined" id="carta" data-k="carta" aria-label="Your letter" style="min-height:420px"></textarea>
+<label class="row" style="max-width:420px;margin:16px 0 0 auto">With love,<input id="firma" data-k="firma" style="font-family:Caveat,cursive;font-size:26px"></label>
+<div style="text-align:right;margin-top:12px"><button type="button" class="btn pri" id="seal">Seal my letter</button></div>
+</div>
+<div class="envelope" aria-live="polite">
+<svg viewBox="0 0 360 230" aria-hidden="true"><rect x="10" y="20" width="340" height="200" rx="14" fill="var(--paper)" stroke="var(--ink)" stroke-width="3"/><path d="M12 210 L150 110 M348 210 L210 110" stroke="var(--ink)" stroke-width="3" fill="none"/><path class="env-flap" d="M12 24 L180 140 L348 24 Z" fill="var(--soft)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/><circle cx="180" cy="138" r="24" fill="var(--hi)" stroke="#141414" stroke-width="3"/><path d="M180 128c-5-7-15-3-12 4 2 5 12 12 12 12s10-7 12-12c3-7-7-11-12-4z" fill="#141414"/></svg>
+<p id="envtxt">Do not open until…</p>
+<button type="button" class="btn" id="unseal">Open and edit</button>
+</div>
+</div>
+</section>
+
+<section class="sheet" data-i="9" aria-label="My Book">
+<div class="ttl"><span class="blk">Your book</span><span class="scr">is ready!</span></div>
+<p class="hint">Here’s how your Memory Book is coming along. Download it to print or save as a PDF: open the file and tap “Print”.</p>
+<div class="sum" id="sum"></div>
+<div class="acts">
+<button type="button" class="btn hi" id="dl" hidden>Download my book</button>
+<button type="button" class="btn" id="copy">Copy my answers</button>
+<button type="button" class="btn" id="reset">Start over</button>
+</div>
+<p class="msg" id="msg" role="status"></p>
+<p style="font-size:14px;color:var(--mute)">Your progress is saved only in this browser. If you’re on a shared computer, download your book before closing.</p>
+<details><summary>For teachers: how to use this resource</summary>
+<ul>
+<li>Share the link. Each student fills in their own book on a phone or computer; nobody sees anyone else’s answers.</li>
+<li>Use it in one full class (45–90 min) or one page per class: progress stays saved on the same device.</li>
+<li>For the signatures page, give students 10 minutes to swap devices and write each other messages.</li>
+<li>At the end, each student downloads their book and prints it or saves it as a PDF.</li>
+</ul></details>
+</section>
+</main>
+
+<footer class="pager"><button type="button" class="btn" id="prev">← Back</button><span id="pos"></span><button type="button" class="btn pri" id="next">Next →</button></footer>
+<p class="foot">The Lazy Teacher · Memory Book</p>
+</div>
+
+<div class="dlg" id="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgt"><div><h3 id="dlgt">Erase your whole book?</h3><p>All your answers, photos and signatures will be erased from this browser. This can’t be undone.</p><div class="acts"><button type="button" class="btn" id="dno">Cancel</button><button type="button" class="btn pri" id="dyes">Yes, erase</button></div></div></div>
+
+<script>
+{
+const KEY='tlt-memorybook-en-v1';
+const PAGES=['Cover','All About Me','My Year in Review','My Favorites','Signatures & Messages','My Year in Numbers','Then and Now','Goals','Letter to Future Me','My Book'];
+const FICO=['song','tv','books','meme','game','friends','food','ball'];
+const FAVS=['Song','TV show or movie','Subject','Class meme or joke','App or game','Best time with friends','Food','Recess game or activity'];
+const NUMS=['Tests I took','Books I read','New friends I made','Times I was late','Times I laughed until I cried','Times I asked, “Can I go to the bathroom?”','Fun recesses I had','Days left until vacation'];
+const GICO=['heart','books2','thumbs'];
+const GOALS=['Personal goal','School goal','Just-for-fun goal'];
+const KEYS=[
+ ['nombre','curso','colegio','foto'],
+ ['retrato','apodo','edad','comida','cancion','risa','animal','poder','pal1','pal2','pal3','dato'],
+ ['mejor','dificil','gracioso','aprendi','pelicula','nota'],
+ [...FAVS.map((_,i)=>'fav'+i),'favtop','favpq'],
+ ['firmas'],
+ [...NUMS.map((_,i)=>'n'+i),'nres','npq'],
+ ['fantes','fahora','era','soy','preoc1','preoc2','gust1','gust2','cambio'],
+ ['m0','c0','m1','c1','m2','c2','palabra'],
+ ['fecha','carta','firma']
+];
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let S={},cur=0,saveT;
+
+function load(){try{S=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){S={}}}
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},300);progress()}
+
+
+const filled=k=>{const v=S[k];return Array.isArray(v)?v.length>0:v!==undefined&&v!==null&&String(v).trim()!==''&&!(k==='favtop'&&v<0)};
+const pct=i=>{const ks=KEYS[i];return Math.round(ks.filter(filled).length/ks.length*100)};
+function progress(){
+ let done=0;KEYS.forEach((_,i)=>{const p=pct(i),t=$$('.tab')[i];if(p>=60)done++;t&&t.classList.toggle('done',p>=60)});
+ $('#pbar').style.width=(done/9*100)+'%';$('#ptxt').textContent=done+' of 9 pages';$('#pb').setAttribute('aria-valuenow',done);
+}
+
+/* build dynamic parts */
+$('#tabs').innerHTML=PAGES.map((p,i)=>`<button type="button" class="tab" data-go="${i}">${i<9?'<span class="ok" aria-hidden="true"></span>':''}${i>0&&i<9?i+'. ':''}${p}</button>`).join('');
+const STAR='<svg viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L12 17.3l-5.7 3 1.1-6.3-4.6-4.5 6.4-.9z"/></svg>';
+$('#stars').innerHTML=[1,2,3,4,5].map(n=>`<button type="button" class="star" data-n="${n}" aria-label="${n} out of 5 stars">${STAR}</button>`).join('');
+const CROWN='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg>';
+$('#favs').innerHTML=FAVS.map((f,i)=>`<div class="box fav" data-fav="${i}"><img class="ico favi" src="icons/${FICO[i]}.png" alt=""><h3>${f}</h3><input class="inp" id="fav${i}" data-k="fav${i}" aria-label="${f}"><button type="button" class="crown" data-crown="${i}" aria-label="Choose ${f} as your all-time favorite">${CROWN}</button></div>`).join('');
+$('#nums').innerHTML=NUMS.map((n,i)=>`<div class="num"><div class="ctr"><button type="button" data-step="-1" data-for="n${i}" aria-label="Minus">−</button><input id="n${i}" data-k="n${i}" inputmode="numeric" aria-label="${esc(n)}"><button type="button" data-step="1" data-for="n${i}" aria-label="Plus">+</button></div><span>${n}</span></div>`).join('');
+$('#goals').innerHTML=GOALS.map((g,i)=>`<div class="box goal"><header><span class="pill-ico"><span class="pill" style="margin:0">${g.toUpperCase()}</span><img class="ico" src="icons/${GICO[i]}.png" alt=""></span><label class="chk"><input type="checkbox" data-k="ok${i}" id="ok${i}">I did it! (check it off next year)</label></header><label class="f">My goal is:<input id="m${i}" data-k="m${i}"></label><label class="f">How will I make it happen?<input id="c${i}" data-k="c${i}"></label></div>`).join('');
+
+/* text fields */
+function fillFields(){$$('[data-k]').forEach(el=>{if(el.id==='stars')return;const v=S[el.dataset.k];if(el.type==='checkbox')el.checked=!!v;else el.value=v??''})}
+document.addEventListener('input',e=>{const el=e.target;if(!el.dataset||!el.dataset.k)return;S[el.dataset.k]=el.type==='checkbox'?el.checked:el.value;if(el.dataset.k.startsWith('fav'))favUI();save()});
+document.addEventListener('change',e=>{const el=e.target;if(el.type==='checkbox'&&el.dataset.k){S[el.dataset.k]=el.checked;save()}});
+
+/* stars */
+function starUI(){$$('.star').forEach(b=>b.classList.toggle('on',+b.dataset.n<=(S.nota||0)))}
+$('#stars').addEventListener('click',e=>{const b=e.target.closest('.star');if(!b)return;const n=+b.dataset.n;S.nota=S.nota===n?0:n;if(!S.nota)delete S.nota;starUI();save()});
+
+/* favourites crown */
+function favUI(){const t=S.favtop;$$('.fav').forEach(f=>f.classList.toggle('top',+f.dataset.fav===t));$('#favname').textContent=t>=0&&t!==undefined?(S['fav'+t]||FAVS[t]):''}
+$('#favs').addEventListener('click',e=>{const c=e.target.closest('[data-crown]');if(!c)return;const i=+c.dataset.crown;if(S.favtop===i)delete S.favtop;else S.favtop=i;favUI();save()});
+
+/* number steppers */
+$('#nums').addEventListener('click',e=>{const b=e.target.closest('[data-step]');if(!b)return;const k=b.dataset.for,inp=$('#'+k);const v=Math.max(0,(parseInt(inp.value,10)||0)+ +b.dataset.step);inp.value=v;S[k]=String(v);save()});
+
+/* photos: downscale to keep storage small */
+function shrink(file,max,cb){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.8))};im.src=r.result};r.readAsDataURL(file)}
+function photoUI(){$$('[data-photo]').forEach(p=>{const v=S[p.dataset.photo],img=p.querySelector('img');p.classList.toggle('has',!!v);img.hidden=!v;if(v)img.src=v;p.querySelector('.pick').textContent=v?'Change':p.dataset.label})}
+$$('[data-photo]').forEach(p=>{p.dataset.label=p.querySelector('.pick').textContent;const inp=p.querySelector('input');p.querySelector('.pick').addEventListener('click',()=>inp.click());inp.addEventListener('change',()=>{const f=inp.files&&inp.files[0];if(!f)return;shrink(f,700,d=>{S[p.dataset.photo]=d;photoUI();save()});inp.value=''})});
+
+/* sketch pads */
+const pads={};
+$$('[data-sketch]').forEach(w=>{
+ const k=w.dataset.sketch,c=w.querySelector('canvas'),x=c.getContext('2d');c.width=+w.dataset.w;c.height=+w.dataset.h;
+ const clear=()=>{x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height)};clear();
+ x.lineCap='round';x.lineJoin='round';x.strokeStyle='#141414';x.lineWidth=k==='_firma'?5:6;
+ let draw=false,last=null,dirty=false;
+ const pt=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};
+ c.addEventListener('pointerdown',e=>{draw=true;last=pt(e);c.setPointerCapture(e.pointerId);x.beginPath();x.arc(last[0],last[1],x.lineWidth/2,0,7);x.fillStyle='#141414';x.fill();dirty=true});
+ c.addEventListener('pointermove',e=>{if(!draw)return;const p=pt(e);x.beginPath();x.moveTo(...last);x.lineTo(...p);x.stroke();last=p});
+ const end=()=>{if(!draw)return;draw=false;if(!w.hasAttribute('data-temp')){S[k]=c.toDataURL('image/png');save()}};
+ c.addEventListener('pointerup',end);c.addEventListener('pointercancel',end);
+ w.querySelector('[data-clear]').addEventListener('click',()=>{clear();dirty=false;if(!w.hasAttribute('data-temp')){delete S[k];save()}});
+ pads[k]={c,clear,load:src=>{clear();if(!src)return;const im=new Image();im.onload=()=>x.drawImage(im,0,0,c.width,c.height);im.src=src},isDirty:()=>dirty,reset:()=>{clear();dirty=false}};
+});
+
+/* signatures & messages */
+function notesUI(){const a=S.firmas||[];$('#notes').innerHTML=a.map((n,i)=>`<div class="note"><img class="ico" src="icons/heart-small.png" alt="" style="height:26px;float:right;margin:2px 34px 0 0"><b>${esc(n.nombre)}</b><p>${esc(n.msg)}</p>${n.firma?`<img src="${n.firma}" alt="Signature by ${esc(n.nombre)}">`:''}<button type="button" class="x" data-del="${i}" aria-label="Remove message from ${esc(n.nombre)}">×</button></div>`).join('')}
+$('#addnote').addEventListener('click',()=>{const nom=$('#fnom').value.trim(),msg=$('#fmsg').value.trim(),m=$('#notemsg');if(!nom||!msg){m.textContent='Add a name and a message first.';return}
+ const p=pads._firma;(S.firmas=S.firmas||[]).push({nombre:nom,msg,firma:p.isDirty()?p.c.toDataURL('image/png'):''});
+ $('#fnom').value='';$('#fmsg').value='';p.reset();m.textContent='Message added! Pass the screen to someone else.';notesUI();save()});
+$('#notes').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(!b)return;S.firmas.splice(+b.dataset.del,1);notesUI();save()});
+
+/* letter seal */
+function sealUI(){const on=!!S.sellada;$('#lwrap').classList.toggle('sealed',on);if(on){const f=S.fecha?new Date(S.fecha+'T12:00').toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'}):'';$('#envtxt').textContent=f?'Do not open until '+f:'Letter sealed'}}
+$('#seal').addEventListener('click',()=>{S.sellada=true;sealUI();save()});
+$('#unseal').addEventListener('click',()=>{S.sellada=false;sealUI();save()});
+
+/* summary + export */
+function sumUI(){$('#sum').innerHTML=PAGES.slice(0,9).map((p,i)=>{const v=pct(i);return`<div><span>${p}</span><span class="m" aria-hidden="true"><i style="width:${v}%"></i></span><em>${v}%</em></div>`}).join('')}
+function txt(k){return esc(S[k]||'').replace(/\n/g,'<br>')}
+function exportHTML(){
+ const L=(l,k)=>S[k]?`<p><b>${l}</b> ${txt(k)}</p>`:'';
+ const img=(k,a)=>S[k]?`<img src="${S[k]}" alt="${a}" class="ph">`:'';
+ const sec=(t,b)=>`<section><h2>${t}</h2>${b}</section>`;
+ let h='';
+ h+=sec('My Memory Book 2026',img('foto','My photo')+L('Name:','nombre')+L('Class:','curso')+L('School:','colegio'));
+ h+=sec('All About Me',img('retrato','My self-portrait')+L('Nickname:','apodo')+L('Age:','edad')+L('My favorite food:','comida')+L('My song of the year:','cancion')+L('Makes me laugh:','risa')+L('If I were an animal, I’d be:','animal')+L('My superpower:','poder')+((S.pal1||S.pal2||S.pal3)?`<p><b>Three words that describe me:</b> ${[S.pal1,S.pal2,S.pal3].filter(Boolean).map(esc).join(' · ')}</p>`:'')+L('A fun fact about me:','dato'));
+ h+=sec('My Year in Review',L('The best moment:','mejor')+L('The hardest part:','dificil')+L('The funniest thing:','gracioso')+L('Something I learned:','aprendi')+L('If my year were a movie, it would be called:','pelicula')+(S.nota?`<p><b>My year’s rating:</b> ${'★'.repeat(S.nota)}${'☆'.repeat(5-S.nota)}</p>`:''));
+ h+=sec('My Favorites of the Year',FAVS.map((f,i)=>L(f+':','fav'+i)).join('')+(S.favtop>=0?`<p><b>My all-time favorite:</b> ${esc(S['fav'+S.favtop]||FAVS[S.favtop])}</p>`:'')+L('Because:','favpq'));
+ h+=sec('Signatures & Messages','<div class="ns">'+(S.firmas||[]).map(n=>`<div class="n"><b>${esc(n.nombre)}</b><p>${esc(n.msg).replace(/\n/g,'<br>')}</p>${n.firma?`<img src="${n.firma}" alt="Signature">`:''}</div>`).join('')+'</div>');
+ h+=sec('My Year in Numbers',NUMS.map((n,i)=>S['n'+i]?`<p><b>${esc(S['n'+i])}</b> · ${esc(n)}</p>`:'').join('')+L('The number that best sums up my year is','nres')+L('because','npq'));
+ h+=sec('Then and Now','<div class="two"><div><h3>Then</h3>'+img('fantes','Then')+L('I used to be…','era')+L('I used to worry about…','preoc1')+L('I used to like…','gust1')+'</div><div><h3>Now</h3>'+img('fahora','Now')+L('I am…','soy')+L('I worry about…','preoc2')+L('I like…','gust2')+'</div></div>'+L('What changed most about me this year was:','cambio'));
+ h+=sec('Goals for Next Year',GOALS.map((g,i)=>`<h3>${g}</h3>${L('My goal is:','m'+i)}${L('How will I make it happen?','c'+i)}<p>☐ I did it!</p>`).join('')+L('My word for next year:','palabra'));
+ h+=sec('Letter to My Future Self',(S.fecha?`<p><b>Open it on:</b> ${esc(S.fecha)}</p>`:'')+`<p class="sc">Dear Future Me,</p><p>${txt('carta')}</p>`+(S.firma?`<p class="sc">With love, ${esc(S.firma)}</p>`:''));
+ return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Memory Book</title><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600&family=Caveat:wght@700&family=Nunito:wght@400;700&display=swap" rel="stylesheet"><style>body{font:15px/1.6 Nunito,sans-serif;color:#111;max-width:760px;margin:0 auto;padding:24px}h2{font:600 30px Fredoka,sans-serif;background:#111;color:#fff;display:inline-block;padding:2px 14px;border-radius:8px}h3{font:600 20px Fredoka,sans-serif;margin:14px 0 4px}@page{size:letter;margin:14mm}section{border:2px solid #111;border-radius:18px;padding:18px 22px;margin-bottom:22px}.ph{max-width:240px;max-height:240px;object-fit:cover;border:2px solid #111;border-radius:14px;display:block;margin:8px 0}.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}.ns{display:grid;grid-template-columns:1fr 1fr;gap:12px}.n{border:2px solid #111;border-radius:14px;padding:10px}.n img{height:50px}.sc{font:700 24px Caveat,cursive}.pb{position:sticky;top:0;text-align:right}.pb button{font:700 16px Nunito;padding:10px 20px;border:2px solid #111;border-radius:99px;background:#ffe14d;cursor:pointer}@media print{body{padding:0;max-width:none}.pb{display:none}section{break-before:page;break-inside:auto;margin:0}section:first-of-type{break-before:auto}.n{break-inside:avoid}h2{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="pb"><button onclick="print()">Print or save as PDF</button></div>${h}<p style="text-align:center;font-size:12px">The Lazy Teacher · Memory Book</p></body></html>`;
+}
+function plain(){return exportHTML().replace(/<style[\s\S]*?<\/style>/,'').replace(/<br>/g,'\n').replace(/<\/(p|h2|h3|section|div)>/g,'\n').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/Print or save as PDF/,'').replace(/\n{3,}/g,'\n\n').trim()}
+$('#dl').hidden=false;
+$('#dl').addEventListener('click',()=>{const m=$('#msg');try{const u=URL.createObjectURL(new Blob([exportHTML()],{type:'text/html'}));const a=document.createElement('a');a.href=u;a.download='mi-memory-book.html';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);m.textContent='Done! Open the downloaded file and tap “Print or save as PDF”.'}catch(e){m.textContent='The download didn’t work. Try “Copy my answers” instead.'}});
+$('#copy').addEventListener('click',async()=>{const m=$('#msg');try{await navigator.clipboard.writeText(plain());m.textContent='Answers copied. Paste them into a document or message.'}catch(e){m.textContent='Your browser didn’t allow copying.'}});
+$('#reset').addEventListener('click',()=>{$('#dlg').classList.add('on');$('#dno').focus()});
+$('#dno').addEventListener('click',()=>$('#dlg').classList.remove('on'));
+$('#dyes').addEventListener('click',()=>{S={};try{localStorage.removeItem(KEY)}catch(e){}renderAll();$('#dlg').classList.remove('on');go(0)});
+
+/* navigation */
+function go(i){cur=Math.max(0,Math.min(9,i));$$('.sheet').forEach(s=>s.classList.toggle('on',+s.dataset.i===cur));$$('.tab').forEach((t,j)=>t.setAttribute('aria-current',j===cur));
+ $('#pos').textContent=(cur+1)+' / 10';$('#prev').disabled=cur===0;$('#next').textContent=cur===8?'Finish →':cur===9?'Back to start':'Next →';
+ if(cur===9)sumUI();const t=$$('.tab')[cur];t&&t.scrollIntoView({block:'nearest',inline:'center'});try{localStorage.setItem(KEY+'-p',cur)}catch(e){}}
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){go(+b.dataset.go);window.scrollTo({top:0})}});
+$('#prev').addEventListener('click',()=>{go(cur-1);window.scrollTo({top:0})});
+$('#next').addEventListener('click',()=>{go(cur===9?0:cur+1);window.scrollTo({top:0})});
+
+function renderAll(){fillFields();starUI();favUI();photoUI();notesUI();sealUI();Object.keys(pads).forEach(k=>k!=='_firma'?pads[k].load(S[k]):pads[k].reset());progress()}
+load();renderAll();
+let start=0;try{start=+localStorage.getItem(KEY+'-p')||0}catch(e){}
+go(start);
+}
+</script>
+</body>
+</html>
